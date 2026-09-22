@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cumbre Digital MX 2026</title>
+<style>
+  /* ---------- Variables de tema (oscuro, acento azul eléctrico) ---------- */
+  :root {
+    --fondo: #0f1116;
+    --fondo-tarjeta: #1a1d29;
+    --fondo-campo: #12141d;
+    --borde: #2a2e3d;
+    --texto: #e8eaf0;
+    --texto-tenue: #9aa0b4;
+    --acento: #2f6bff;
+    --acento-claro: #5b8bff;
+    --error: #ff5470;
+    --exito: #34d399;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top, #171a26 0%, var(--fondo) 60%);
+    color: var(--texto);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 24px;
+  }
+
+  .contenedor {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  /* ---------- Encabezado / logo de texto ---------- */
+  .encabezado {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .logo-texto {
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, var(--acento-claro), var(--acento));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .subtitulo {
+    margin-top: 6px;
+    color: var(--texto-tenue);
+    font-size: 0.95rem;
+  }
+
+  /* ---------- Tarjeta principal ---------- */
+  .tarjeta {
+    background: var(--fondo-tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    animation: aparecer 0.35s ease;
+  }
+
+  @keyframes aparecer {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .oculto {
+    display: none !important;
+  }
+
+  /* ---------- Formulario ---------- */
+  .campo {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--texto-tenue);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--fondo-campo);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    color: var(--texto);
+    font-size: 0.98rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  input::placeholder {
+    color: #5b5f72;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: var(--acento);
+    box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.25);
+  }
+
+  input.campo-invalido,
+  select.campo-invalido {
+    border-color: var(--error);
+  }
+
+  .mensaje-error-campo {
+    color: var(--error);
+    font-size: 0.8rem;
+    margin-top: 6px;
+    min-height: 1em;
+  }
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa0b4' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  .error-general {
+    background: rgba(255, 84, 112, 0.12);
+    border: 1px solid rgba(255, 84, 112, 0.35);
+    color: var(--error);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    margin-bottom: 18px;
+  }
+
+  .boton-principal {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: var(--acento);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  .boton-principal:hover {
+    background: var(--acento-claro);
+  }
+
+  .boton-principal:active {
+    transform: scale(0.98);
+  }
+
+  .boton-secundario {
+    width: 100%;
+    padding: 13px;
+    margin-top: 12px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--texto);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .boton-secundario:hover {
+    border-color: var(--acento);
+    background: rgba(47, 107, 255, 0.08);
+  }
+
+  /* ---------- Confirmación ---------- */
+  .confirmacion {
+    text-align: center;
+  }
+
+  .icono-exito {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: rgba(52, 211, 153, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icono-exito svg {
+    stroke: var(--exito);
+  }
+
+  .numero-registro {
+    display: inline-block;
+    margin: 14px 0;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: rgba(47, 107, 255, 0.12);
+    border: 1px solid rgba(47, 107, 255, 0.4);
+    color: var(--acento-claro);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: 0.5px;
+  }
+
+  .nombre-asistente {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 4px 0 0;
+  }
+
+  .mensaje-bienvenida {
+    color: var(--texto-tenue);
+    font-size: 0.95rem;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 480px) {
+    .tarjeta {
+      padding: 26px 20px;
+    }
+
+    .logo-texto {
+      font-size: 1.6rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="contenedor">
+    <div class="encabezado">
+      <div class="logo-texto">Cumbre Digital MX 2026</div>
+      <div class="subtitulo">Transformación digital para PyMEs</div>
+    </div>
+
+    <!-- ---------- Vista: formulario de registro ---------- -->
+    <div class="tarjeta" id="vista-formulario">
+      <div class="error-general oculto" id="error-general"></div>
+
+      <form id="form-registro" novalidate>
+        <div class="campo">
+          <label for="nombre">Nombre completo</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Ej. María López">
+          <div class="mensaje-error-campo" id="error-nombre"></div>
+        </div>
+
+        <div class="campo">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com">
+          <div class="mensaje-error-campo" id="error-email"></div>
+        </div>
+
+        <div class="campo">
+          <label for="empresa">Empresa u organización</label>
+          <input type="text" id="empresa" name="empresa" placeholder="Ej. Comercial del Norte S.A.">
+          <div class="mensaje-error-campo" id="error-empresa"></div>
+        </div>
+
+        <div class="campo">
+          <label for="area">Área de interés</label>
+          <select id="area" name="area">
+            <option value="" disabled selected>Selecciona un área</option>
+            <option value="Tecnología">Tecnología</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Negocios">Negocios</option>
+            <option value="Emprendimiento">Emprendimiento</option>
+          </select>
+          <div class="mensaje-error-campo" id="error-area"></div>
+        </div>
+
+        <button type="submit" class="boton-principal">Registrarme</button>
+      </form>
+    </div>
+
+    <!-- ---------- Vista: confirmación de registro ---------- -->
+    <div class="tarjeta confirmacion oculto" id="vista-confirmacion">
+      <div class="icono-exito">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+
+      <div class="numero-registro" id="texto-numero-registro">REG-0000</div>
+      <p class="nombre-asistente" id="texto-nombre-asistente">Nombre del asistente</p>
+      <p class="mensaje-bienvenida" id="texto-mensaje-bienvenida"></p>
+
+      <button type="button" class="boton-secundario" id="boton-nuevo-registro">Registrar a otra persona</button>
+    </div>
+  </div>
+
+<script>
+  // Referencias a los elementos principales de la interfaz
+  const vistaFormulario = document.getElementById('vista-formulario');
+  const vistaConfirmacion = document.getElementById('vista-confirmacion');
+  const formRegistro = document.getElementById('form-registro');
+  const errorGeneral = document.getElementById('error-general');
+  const botonNuevoRegistro = document.getElementById('boton-nuevo-registro');
+
+  const campoNombre = document.getElementById('nombre');
+  const campoEmail = document.getElementById('email');
+  const campoEmpresa = document.getElementById('empresa');
+  const campoArea = document.getElementById('area');
+
+  // Expresión regular simple para validar formato de email
+  const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Limpia todos los mensajes de error (generales y por campo)
+  function limpiarErrores() {
+    errorGeneral.textContent = '';
+    errorGeneral.classList.add('oculto');
+
+    document.querySelectorAll('.mensaje-error-campo').forEach((el) => {
+      el.textContent = '';
+    });
+
+    document.querySelectorAll('.campo-invalido').forEach((el) => {
+      el.classList.remove('campo-invalido');
+    });
+  }
+
+  // Marca un campo como inválido y muestra su mensaje de error específico
+  function marcarError(campo, idMensaje, mensaje) {
+    campo.classList.add('campo-invalido');
+    document.getElementById(idMensaje).textContent = mensaje;
+  }
+
+  // Valida todos los campos del formulario; retorna true si todo es válido
+  function validarFormulario() {
+    limpiarErrores();
+    let esValido = true;
+
+    const nombre = campoNombre.value.trim();
+    const email = campoEmail.value.trim();
+    const empresa = campoEmpresa.value.trim();
+    const area = campoArea.value;
+
+    if (nombre === '') {
+      marcarError(campoNombre, 'error-nombre', 'El nombre completo es obligatorio.');
+      esValido = false;
+    }
+
+    if (email === '') {
+      marcarError(campoEmail, 'error-email', 'El email es obligatorio.');
+      esValido = false;
+    } else if (!REGEX_EMAIL.test(email)) {
+      marcarError(campoEmail, 'error-email', 'El email no tiene un formato válido.');
+      esValido = false;
+    }
+
+    if (empresa === '') {
+      marcarError(campoEmpresa, 'error-empresa', 'La empresa u organización es obligatoria.');
+      esValido = false;
+    }
+
+    if (area === '') {
+      marcarError(campoArea, 'error-area', 'Selecciona un área de interés.');
+      esValido = false;
+    }
+
+    if (!esValido) {
+      errorGeneral.textContent = 'Por favor corrige los campos marcados antes de continuar.';
+      errorGeneral.classList.remove('oculto');
+    }
+
+    return esValido;
+  }
+
+  // Genera un número de registro con formato REG-XXXX (4 dígitos aleatorios)
+  function generarNumeroRegistro() {
+    const digitos = Math.floor(1000 + Math.random() * 9000);
+    return `REG-${digitos}`;
+  }
+
+  // Muestra la pantalla de confirmación con los datos del asistente registrado
+  function mostrarConfirmacion(nombre) {
+    const numeroRegistro = generarNumeroRegistro();
+
+    document.getElementById('texto-numero-registro').textContent = numeroRegistro;
+    document.getElementById('texto-nombre-asistente').textContent = nombre;
+    document.getElementById('texto-mensaje-bienvenida').textContent =
+      `¡Bienvenido(a) a la Cumbre Digital MX 2026! Guarda tu número de registro, lo necesitarás el día del evento.`;
+
+    vistaFormulario.classList.add('oculto');
+    vistaConfirmacion.classList.remove('oculto');
+  }
+
+  // Manejador del envío del formulario
+  formRegistro.addEventListener('submit', function (evento) {
+    evento.preventDefault();
+
+    if (validarFormulario()) {
+      mostrarConfirmacion(campoNombre.value.trim());
+    }
+  });
+
+  // Botón para registrar a otra persona: limpia el formulario y vuelve a mostrarlo
+  botonNuevoRegistro.addEventListener('click', function () {
+    formRegistro.reset();
+    limpiarErrores();
+
+    vistaConfirmacion.classList.add('oculto');
+    vistaFormulario.classList.remove('oculto');
+
+    campoNombre.focus();
+  });
+</script>
+
+</body>
+</html>
