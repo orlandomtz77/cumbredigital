@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block titulo %}Registro confirmado · Cumbre Digital MX 2026{% endblock %}
+
+{% block contenido %}
+    <!-- ---------- Vista: confirmación de registro ---------- -->
+    <div class="tarjeta confirmacion" id="vista-confirmacion">
+      <div class="icono-exito">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+
+      <div class="numero-registro" id="texto-numero-registro">{{ asistente.numero_registro }}</div>
+      <p class="nombre-asistente" id="texto-nombre-asistente">{{ asistente.nombre }}</p>
+      <p class="mensaje-bienvenida" id="texto-mensaje-bienvenida">
+        ¡Bienvenido(a) a la Cumbre Digital MX 2026! Guarda tu número de registro, lo necesitarás el día del evento.
+      </p>
+
+      <a href="{{ url_for('inicio') }}" class="boton-secundario" id="boton-nuevo-registro">Registrar a otra persona</a>
+    </div>
+{% endblock %}

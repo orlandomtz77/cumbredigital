@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+    <!-- ---------- Vista: formulario de registro ---------- -->
+    <div class="tarjeta" id="vista-formulario">
+      <div class="error-general {% if not error_general %}oculto{% endif %}" id="error-general">{{ error_general or '' }}</div>
+
+      <form id="form-registro" action="{{ url_for('registro') }}" method="post" novalidate>
+        <div class="campo">
+          <label for="nombre">Nombre completo</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Ej. María López"
+                 value="{{ datos.nombre }}" class="{% if errores.nombre %}campo-invalido{% endif %}">
+          <div class="mensaje-error-campo" id="error-nombre">{{ errores.nombre or '' }}</div>
+        </div>
+
+        <div class="campo">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com"
+                 value="{{ datos.email }}" class="{% if errores.email %}campo-invalido{% endif %}">
+          <div class="mensaje-error-campo" id="error-email">{{ errores.email or '' }}</div>
+        </div>
+
+        <div class="campo">
+          <label for="empresa">Empresa u organización</label>
+          <input type="text" id="empresa" name="empresa" placeholder="Ej. Comercial del Norte S.A."
+                 value="{{ datos.empresa }}" class="{% if errores.empresa %}campo-invalido{% endif %}">
+          <div class="mensaje-error-campo" id="error-empresa">{{ errores.empresa or '' }}</div>
+        </div>
+
+        <div class="campo">
+          <label for="area">Área de interés</label>
+          <select id="area" name="area" class="{% if errores.area %}campo-invalido{% endif %}">
+            <option value="" disabled {% if not datos.area %}selected{% endif %}>Selecciona un área</option>
+            {% for area in areas %}
+            <option value="{{ area }}" {% if datos.area == area %}selected{% endif %}>{{ area }}</option>
+            {% endfor %}
+          </select>
+          <div class="mensaje-error-campo" id="error-area">{{ errores.area or '' }}</div>
+        </div>
+
+        <button type="submit" class="boton-principal" id="boton-enviar">Registrarme</button>
+      </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/formulario.js') }}"></script>
+{% endblock %}

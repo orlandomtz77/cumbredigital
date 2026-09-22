@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block titulo %}Asistentes · Cumbre Digital MX 2026{% endblock %}
+
+{% block clase_contenedor %}contenedor-ancho{% endblock %}
+
+{% block contenido %}
+    <div class="tarjeta">
+      <div class="admin-encabezado">
+        <h1 class="admin-titulo">Asistentes registrados</h1>
+        <a href="{{ url_for('inicio') }}" class="enlace-discreto">← Ir al formulario</a>
+      </div>
+
+      <!-- Resumen: total y conteo por área -->
+      <div class="resumen">
+        <div class="resumen-item">
+          <div class="resumen-valor">{{ asistentes | length }}</div>
+          <div class="resumen-etiqueta">Total</div>
+        </div>
+        {% for area in areas %}
+        <div class="resumen-item">
+          <div class="resumen-valor">{{ conteo_por_area.get(area, 0) }}</div>
+          <div class="resumen-etiqueta">{{ area }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if asistentes %}
+      <div class="tabla-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Nº registro</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Empresa</th>
+              <th>Área</th>
+              <th>Fecha (UTC)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for asistente in asistentes %}
+            <tr>
+              <td class="celda-registro">{{ asistente.numero_registro }}</td>
+              <td>{{ asistente.nombre }}</td>
+              <td>{{ asistente.email }}</td>
+              <td>{{ asistente.empresa }}</td>
+              <td>{{ asistente.area }}</td>
+              <td>{{ asistente.fecha_registro }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="estado-vacio">Aún no hay asistentes registrados.</p>
+      {% endif %}
+    </div>
+{% endblock %}

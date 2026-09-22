@@ -1,0 +1,24 @@
+# Ambiente virtual
+venv/
+
+# Archivos generados por Python
+__pycache__/
+*.pyc
+
+# Base de datos local (se crea sola al arrancar)
+evento.db
+
+# Configuración local de Claude Code
+.claude/
+
+# Salidas de Playwright MCP
+.playwright-mcp/
+
+# Logs
+*.log
+
+# Versión de Python local
+.python-version
+
+# Variables de entorno
+.env
