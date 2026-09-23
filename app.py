@@ -2,15 +2,22 @@
 
 import os
 import re
-import sqlite3
 import uuid
 
+import psycopg
+from dotenv import load_dotenv
 from flask import Flask, abort, g, redirect, render_template, request, url_for
+from psycopg.rows import dict_row
 
-# Ruta de la base de datos: por defecto evento.db en la raíz del proyecto.
-# Se puede cambiar con la variable de entorno RUTA_BD (útil en Render con disco persistente).
-DIRECTORIO_BASE = os.path.dirname(os.path.abspath(__file__))
-RUTA_BD = os.environ.get("RUTA_BD", os.path.join(DIRECTORIO_BASE, "evento.db"))
+# En local lee DATABASE_URL desde .env; en Render no hay .env y se usa la variable de entorno.
+load_dotenv()
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "Falta la variable de entorno DATABASE_URL. "
+        "En local copia .env.example a .env y pon tu cadena de conexión de Supabase; "
+        "en Render agrégala en Environment."
+    )
 
 AREAS = ["Tecnología", "Marketing", "Negocios", "Emprendimiento"]
 REGEX_EMAIL = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
@@ -22,10 +29,9 @@ app = Flask(__name__)
 # ---------- Base de datos ----------
 
 def obtener_bd():
-    """Devuelve la conexión a SQLite de la petición actual (una por petición)."""
+    """Devuelve la conexión a PostgreSQL de la petición actual (una por petición)."""
     if "bd" not in g:
-        g.bd = sqlite3.connect(RUTA_BD)
-        g.bd.row_factory = sqlite3.Row
+        g.bd = psycopg.connect(DATABASE_URL, row_factory=dict_row)
     return g.bd
 
 
@@ -35,23 +41,6 @@ def cerrar_bd(_error):
     bd = g.pop("bd", None)
     if bd is not None:
         bd.close()
-
-
-def inicializar_bd():
-    """Crea la tabla de asistentes si todavía no existe."""
-    areas_sql = ", ".join(f"'{area}'" for area in AREAS)
-    with sqlite3.connect(RUTA_BD) as bd:
-        bd.execute(f"""
-            CREATE TABLE IF NOT EXISTS asistentes (
-                id              INTEGER PRIMARY KEY AUTOINCREMENT,
-                numero_registro TEXT    NOT NULL UNIQUE,
-                nombre          TEXT    NOT NULL,
-                email           TEXT    NOT NULL UNIQUE COLLATE NOCASE,
-                empresa         TEXT    NOT NULL,
-                area            TEXT    NOT NULL CHECK (area IN ({areas_sql})),
-                fecha_registro  TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
 
 
 # ---------- Validación ----------
@@ -104,7 +93,8 @@ def inicio():
 def registro():
     datos = {
         "nombre": request.form.get("nombre", "").strip(),
-        "email": request.form.get("email", "").strip(),
+        # En minúsculas para que el email único no distinga mayúsculas
+        "email": request.form.get("email", "").strip().lower(),
         "empresa": request.form.get("empresa", "").strip(),
         "area": request.form.get("area", "").strip(),
     }
@@ -119,21 +109,21 @@ def registro():
     try:
         # Se inserta con un número temporal y, en la misma transacción,
         # se reemplaza por REG-0001, REG-0002... derivado del id consecutivo.
-        cursor = bd.execute(
-            "INSERT INTO asistentes (numero_registro, nombre, email, empresa, area) "
-            "VALUES (?, ?, ?, ?, ?)",
+        id_asistente = bd.execute(
+            "INSERT INTO asistentes (numero_registro, nombre, email, empresa, area_interes) "
+            "VALUES (%s, %s, %s, %s, %s) RETURNING id",
             (f"TEMP-{uuid.uuid4().hex}", datos["nombre"], datos["email"],
              datos["empresa"], datos["area"]),
-        )
-        numero_registro = f"REG-{cursor.lastrowid:04d}"
+        ).fetchone()["id"]
+        numero_registro = f"REG-{id_asistente:04d}"
         bd.execute(
-            "UPDATE asistentes SET numero_registro = ? WHERE id = ?",
-            (numero_registro, cursor.lastrowid),
+            "UPDATE asistentes SET numero_registro = %s WHERE id = %s",
+            (numero_registro, id_asistente),
         )
         bd.commit()
-    except sqlite3.IntegrityError as error:
+    except psycopg.errors.UniqueViolation as error:
         bd.rollback()
-        if "asistentes.email" in str(error):
+        if error.diag.constraint_name == "asistentes_email_key":
             return mostrar_formulario(
                 datos,
                 {"email": "Este email ya está registrado."},
@@ -143,7 +133,7 @@ def registro():
         return mostrar_formulario(
             datos, None, "No se pudo guardar el registro. Revisa los datos e inténtalo de nuevo.", 400
         )
-    except sqlite3.Error:
+    except psycopg.Error:
         bd.rollback()
         return mostrar_formulario(
             datos, None, "Ocurrió un error al guardar tu registro. Inténtalo de nuevo en unos minutos.", 500
@@ -156,7 +146,7 @@ def registro():
 @app.get("/confirmacion/<numero_registro>")
 def confirmacion(numero_registro):
     asistente = obtener_bd().execute(
-        "SELECT numero_registro, nombre FROM asistentes WHERE numero_registro = ?",
+        "SELECT numero_registro, nombre FROM asistentes WHERE numero_registro = %s",
         (numero_registro,),
     ).fetchone()
     if asistente is None:
@@ -168,12 +158,17 @@ def confirmacion(numero_registro):
 def admin():
     bd = obtener_bd()
     asistentes = bd.execute(
-        "SELECT numero_registro, nombre, email, empresa, area, fecha_registro "
+        "SELECT numero_registro, nombre, email, empresa, area_interes AS area, "
+        "to_char(fecha_registro, 'YYYY-MM-DD HH24:MI') AS fecha_registro "
         "FROM asistentes ORDER BY id DESC"
     ).fetchall()
-    conteo_por_area = dict(
-        bd.execute("SELECT area, COUNT(*) FROM asistentes GROUP BY area").fetchall()
-    )
+    conteo_por_area = {
+        fila["area"]: fila["total"]
+        for fila in bd.execute(
+            "SELECT area_interes AS area, COUNT(*) AS total "
+            "FROM asistentes GROUP BY area_interes"
+        ).fetchall()
+    }
     return render_template(
         "admin.html", asistentes=asistentes, conteo_por_area=conteo_por_area, areas=AREAS
     )
@@ -191,8 +186,14 @@ def no_encontrado(_error):
     )
 
 
-# La tabla se crea al importar el módulo, así funciona con `python app.py` y con gunicorn.
-inicializar_bd()
+@app.errorhandler(psycopg.OperationalError)
+def error_de_conexion(_error):
+    """Fallo al conectar con la base de datos (por ejemplo, Supabase no responde)."""
+    return mostrar_formulario(
+        error_general="No pudimos conectar con la base de datos. Inténtalo de nuevo en unos minutos.",
+        codigo=503,
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
